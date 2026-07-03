@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 import json
 
 name = "Victor"
@@ -70,6 +72,64 @@ def total_volume(day):
     for ex in day["exercises"]:
         total += ex["sets"] * ex["reps"] * ex["load"]  # sets x reps x load
     return total
+
+def create_dataframe(week):
+    """Converts the training week into a pandas DataFrame."""
+    rows = []
+    for day in week:
+        for ex in day["exercises"]:
+            row = ex.copy()
+            row["day"]  = day["day"]
+            row["focus"] = day["focus"]
+            rows.append(row)
+
+    df = pd.DataFrame(rows)
+    df["volume"] = df["sets"] * df["reps"] * df["load"]
+    return df
+
+def pandas_analysis(week):
+    """Generates a full weekly analysis using Pandas and Numpy."""
+    df = create_dataframe(week)
+
+    print(f"\n================================")
+    print(f"   Pandas analysis - Week")
+    print(f"================================")
+
+    # volume per day
+    print("\nVolume per day:")
+    vol_day = df.groupby("day")["volume"].sum().sort_values(ascending=False)
+    for day, vol in vol_day.items():
+        print(f"  {day}: {vol} lbs")
+
+    # heaviest exercise
+    heaviest = df.sort_values("load", ascending=False).iloc[0]
+    print(f"\nHeaviest exercise:")
+    print(f"  {heaviest['name']} — {heaviest['load']} lbs ({heaviest['day']})")
+
+    # exercise with highest volume
+    highest_vol = df.sort_values("volume", ascending=False).iloc[0]
+    print(f"\nHighest volume exercise:")
+    print(f"  {highest_vol['name']} - {highest_vol['volume']} lbs")
+
+    # load statistics with Numpy
+    loads = np.array(df["load"])
+    print(f"\nLoad statistics:")
+    print(f"  Mean:            {np.mean(loads):.1f} lbs")
+    print(f"  Highest load:    {np.max(loads)} lbs")
+    print(f"  Lowest load:     {np.min(loads)} lbs")
+    print(f"  Std deviation:   {np.std(loads):.1f} lbs")
+
+    # top 3 exercises by volume
+    print(f"\nTop 3 exercises by volume:")
+    top3 = df.sort_values("volume", ascending=False).head(3)
+    for _, row in top3.iterrows():
+        print(f"  {row['name']}: {row['volume']} lbs ({row['day']})")
+
+    # save CSV
+    df.to_csv("workout_week1.csv", index=False)
+    print(f"\nFile workout_week1.csv saved!")
+
+    return df
 
 def classify_workout(sets):
     """Classifies the workout by set volume"""
@@ -204,6 +264,8 @@ weekly_report(name, week, goal_sets)
 
 save_history(name, week, week_number=1)
 view_history()
+
+df = pandas_analysis(week)  
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
