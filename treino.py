@@ -1,6 +1,14 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import json
+import os
+
+# folder where the treino.py live - regardless of where the terminal is running from
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def get_path(filename):
+    return os.path.join(SCRIPT_DIR, filename)
 
 name = "Victor"
 weight = 175.0
@@ -16,9 +24,9 @@ tuesday = {
     "day": "Tuesday",
     "focus": "Chest, shoulders and triceps",
     "exercises": [
-        {"name": "Incline bench press", "sets": 3, "reps": 10, "load": 150},
-        {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 165},
-        {"name": "Chest fly", "sets": 3, "reps": 10, "load": 105},
+        {"name": "Incline bench press", "sets": 3, "reps": 8, "load": 165},
+        {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 175},
+        {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
         {"name": "Lateral raise", "sets": 3, "reps": 12, "load": 30},
         {"name": "Shoulder press", "sets": 3, "reps": 10, "load": 155},
         {"name": "French press", "sets": 3, "reps": 10, "load": 120},
@@ -31,10 +39,10 @@ thursday = {
     "day": "Thursday",
     "focus": "Back and biceps",
     "exercises": [
-        {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 170},
+        {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 175},
         {"name": "Bent-over row", "sets": 3, "reps": 10, "load": 130},
         {"name": "Single-arm row", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 110},
+        {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 115},
         {"name": "Barbell curl", "sets": 3, "reps": 10, "load": 130},
         {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Forearm curl", "sets": 2, "reps": 10, "load": 120}
@@ -45,10 +53,10 @@ saturday = {
     "day": "Saturday",
     "focus": "Legs",
     "exercises": [
-        {"name": "Squat", "sets": 4, "reps": 10, "load": 260},
+        {"name": "Squat", "sets": 4, "reps": 10, "load": 265},
         {"name": "Leg extension", "sets": 3, "reps": 10, "load": 140},
         {"name": "Leg curl", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Calf raise", "sets": 4, "reps": 12, "load": 145}
+        {"name": "Calf raise", "sets": 4, "reps": 12, "load": 150}
     ]
 }
 
@@ -87,12 +95,12 @@ def create_dataframe(week):
     df["volume"] = df["sets"] * df["reps"] * df["load"]
     return df
 
-def pandas_analysis(week):
+def pandas_analysis(week, week_number):
     """Generates a full weekly analysis using Pandas and Numpy."""
     df = create_dataframe(week)
 
     print(f"\n================================")
-    print(f"   Pandas analysis - Week")
+    print(f"   Pandas analysis - Week {week_number}")
     print(f"================================")
 
     # volume per day
@@ -126,11 +134,28 @@ def pandas_analysis(week):
         print(f"  {row['name']}: {row['volume']} lbs ({row['day']})")
 
     # save CSV
-    df.to_csv("workout_week1.csv", index=False)
-    print(f"\nFile workout_week1.csv saved!")
+    filename = f"workout_week{week_number}.csv"
+    df.to_csv(get_path(filename), index=False)
+    print(f"\nFile {filename} saved!")
 
     return df
 
+def plot_weekly_volume(week, week_number, name):
+    """Plots the total volume per day using matplotlib and saves as PNG."""
+    df = create_dataframe(week)
+    vol_day = df.groupby("day")["volume"].sum().sort_values(ascending=False)
+
+    plt.figure(figsize=(7, 4))
+    plt.bar(vol_day.index, vol_day.values, color="steelblue")
+    plt.title(f"Total volume per day - {name} (Week {week_number})")
+    plt.xlabel("Day")
+    plt.ylabel("Volume (lbs)")
+    plt.tight_layout()
+
+    filename = f"volume_week{week_number}.png"
+    plt.savefig(get_path(filename))
+    plt.show()
+    
 def classify_workout(sets):
     """Classifies the workout by set volume"""
     if sets < 10:
@@ -218,7 +243,7 @@ def save_history(name, week, week_number):
     }
 
     try:
-        with open("history.json", "r") as f:
+        with open(get_path("history.json"), "r") as f:
             history = json.load(f)
     except FileNotFoundError:
         history = []
@@ -234,7 +259,7 @@ def save_history(name, week, week_number):
     if not found:
         history.append(record)     # add only if it's new
 
-    with open("history.json", "w") as f:
+    with open(get_path("history.json"), "w") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
 
     print(f"\nWeek {week_number} saved to history.json!")
@@ -242,7 +267,7 @@ def save_history(name, week, week_number):
 def view_history():
     """Loads and displays the weekly history."""
     try:
-        with open("history.json", "r") as f:
+        with open(get_path("history.json"), "r") as f:
             history = json.load(f)
     except FileNotFoundError:
         print("No history found yet.")
@@ -262,10 +287,12 @@ def view_history():
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=1)
+save_history(name, week, week_number=2)
 view_history()
 
-df = pandas_analysis(week)  
+df = pandas_analysis(week, week_number=2)
+
+plot_weekly_volume(week, week_number=2, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
