@@ -154,7 +154,7 @@ def plot_weekly_volume(week, week_number, name):
 
     filename = f"volume_week{week_number}.png"
     plt.savefig(get_path(filename))
-    plt.show()
+    plt.close()
     
 def classify_workout(sets):
     """Classifies the workout by set volume"""
@@ -191,14 +191,16 @@ def workout_summary(day, goal):
     else:
         print(f"  Classification: {classification} - {goal - s} sets short.")
 
-def load_progression(exercise, starting_load, goal_load, increment=5.0):
-    """Shows the weekly load progression until the goal is reached."""
-    print(f"\n--- Load progression: {exercise} ---")
+def generate_load_progression(starting_load, goal_load, increment=5.0):
+    """Generates a list of week/load/reps data for a progression, without printing."""
+    weeks = []
+    loads = []
+    reps_list = []
+
     week = 1
     load = starting_load
 
     while load <= goal_load:
-
         if load < 110:
             reps = 12
         elif load < 155:
@@ -207,11 +209,45 @@ def load_progression(exercise, starting_load, goal_load, increment=5.0):
             reps = 8
         else:
             reps = 6
+        
+        weeks.append(week)
+        loads.append(load)
+        reps_list.append(reps)
 
-        print(f"  Week {week:2}: {load:.1f} lbs x {reps} reps")
         load += increment
         week += 1
+
+    return weeks, loads, reps_list
+
+def load_progression(exercise, starting_load, goal_load, increment=5.0):
+    """Prints the weekly load progression until the goal is reached."""
+    print(f"\n--- Load progression: {exercise} ---")
+    
+    weeks, loads, reps_list = generate_load_progression(starting_load, goal_load, increment)
+
+    for w, l, r in zip(weeks, loads, reps_list):
+        print(f"  Week {w:2}: {l:.1f} lbs x {r} reps")
+
     print(f" Goal of {goal_load:.1f} lbs reached!")
+
+def plot_load_progression(exercise, starting_load, goal_load, increment=5.0):
+    """Plots the weekly load progression as a line chart and saves as PNG."""
+    weeks, loads, reps_list = generate_load_progression(starting_load, goal_load, increment)
+
+    plt.figure(figsize=(7, 4))
+    plt.plot(weeks, loads, marker="o", color="steelblue")
+    plt.title(f"Load progression - {exercise}")
+    plt.xlabel("Week")
+    plt.ylabel("Load (lbs)")
+    plt.tight_layout()
+
+    safe_name = exercise.lower().replace(" ", "_")
+    filename = f"progression_{safe_name}.png"
+    plt.savefig(get_path(filename))
+    plt.close()
+
+    print(f"\nChart saved as {filename}!")
+
 
 def weekly_report(name, workouts, goal_sets):
     """Generates the full weekly report."""
@@ -296,4 +332,9 @@ plot_weekly_volume(week, week_number=2, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
+plot_load_progression("Squat", starting_load =130, goal_load=220, increment=5.0)
+
 load_progression("Flat bench press", starting_load=155, goal_load=200, increment=5.0)
+plot_load_progression("Flat bench press", starting_load=155, goal_load=200, increment=5.0)
+
+
