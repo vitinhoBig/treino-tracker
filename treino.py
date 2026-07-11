@@ -1,3 +1,4 @@
+from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -318,6 +319,38 @@ def view_history():
         sign = "+" if diff >= 0 else ""
         print(f"\n   Change vs previous week: {sign}{diff} lbs")
 
+def predict_next_week():
+    """Predicts the next week's total volume using linear regression on history.json."""
+    try:
+        with open(get_path("history.json"), "r") as f:
+            history = json.load(f)
+    except FileNotFoundError:
+        print("No history found yet.")
+        return
+    
+    if len(history) < 2:
+        print("\nNo history found yet - can't predict.")
+        return
+    
+    weeks = [[w["week"]] for w in history]
+    volumes = [w["total_volume"] for w in history]
+
+    model = LinearRegression()
+    model.fit(weeks, volumes)
+    next_week = history[-1]["week"] + 1
+    prediction = model.predict([[next_week]])[0]
+    trend = model.coef_[0]
+
+    print(f"\n--- Volume prediction ---")
+    print(f"  Predicted volume for week {next_week}: {prediction:.1f} lbs")
+    print(f"  Weekly trend: {trend:+.1f} lbs/week")
+
+    if trend > 0:
+        print("  You're trending upward - keep it up!")
+    elif trend < 0:
+        print("  Volume is trending down - might be a good week to push harder.")
+    else:
+        print("  Volume is holding steady.")
 
 # call the report — last lines of the file
 week = [tuesday, thursday, saturday]
@@ -325,6 +358,8 @@ weekly_report(name, week, goal_sets)
 
 save_history(name, week, week_number=2)
 view_history()
+
+predict_next_week()
 
 df = pandas_analysis(week, week_number=2)
 
