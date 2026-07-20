@@ -1,3 +1,6 @@
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -95,6 +98,44 @@ def create_dataframe(week):
     df = pd.DataFrame(rows)
     df["volume"] = df["sets"] * df["reps"] * df["load"]
     return df
+
+def classify_load(load):
+    """Classifies a single exercise's intensity based on load - same theresholds as load_progression."""
+    if load < 110:
+        return "Light"
+    elif load < 155:
+        return "Moderate"
+    elif load < 200:
+        return "Heavy"
+    else:
+        return "Very heavy"
+    
+def train_intensity_classifier(week):
+    """Trains a Random Forest to predict exercise intensity from sets, reps, and load."""""
+    df = create_dataframe(week)
+    df["intensity"] = df["load"].apply(classify_load)
+
+    X = df[["sets", "reps", "load"]]
+    y = df["intensity"]
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+
+    accuracy = accuracy_score(y_test, model.predict(X_test))
+
+    print(f"\n--- Intensity classifier ---")
+    print(f"  Trained on {len(X_train)} exercises, tested on {len(X_test)}")
+    print(f"  Accuracy: {accuracy * 100:.1f}%")
+    
+    return model
+
+def predict_workout_intensity(model, sets, reps, load):
+    """Predicts the intensity classification for a hypothetical new exercise."""
+    prediction = model.predict([[sets, reps, load]])[0]
+    print(f"  Predicted intensity for {sets}x{reps} @ {load}lbs: {prediction}")
+    return prediction 
 
 def pandas_analysis(week, week_number):
     """Generates a full weekly analysis using Pandas and Numpy."""
@@ -360,6 +401,10 @@ save_history(name, week, week_number=2)
 view_history()
 
 predict_next_week()
+
+intensity_model = train_intensity_classifier(week)
+predict_workout_intensity(intensity_model, sets=4, reps=8, load=180) #example prediction
+predict_workout_intensity(intensity_model, sets=3, reps=12, load=30) #another example prediction
 
 df = pandas_analysis(week, week_number=2)
 
