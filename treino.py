@@ -28,13 +28,9 @@ tuesday = {
     "day": "Tuesday",
     "focus": "Chest, shoulders and triceps",
     "exercises": [
-        {"name": "Incline bench press", "sets": 3, "reps": 8, "load": 165},
-        {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 175},
-        {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
-        {"name": "Lateral raise", "sets": 3, "reps": 12, "load": 30},
-        {"name": "Shoulder press", "sets": 3, "reps": 10, "load": 155},
-        {"name": "French press", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Triceps rope pushdown", "sets": 2, "reps": 10, "load": 130}
+        {"name": "Incline bench press", "sets": 3, "reps": 10, "load": 140},
+        {"name": "Flat bench press", "sets": 3, "reps": 8, "load": 175},
+        {"name": "Chest fly", "sets": 2, "reps": 10, "load": 115},
     ]
 
 }
@@ -46,8 +42,8 @@ thursday = {
         {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 175},
         {"name": "Bent-over row", "sets": 3, "reps": 10, "load": 130},
         {"name": "Single-arm row", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 115},
-        {"name": "Barbell curl", "sets": 3, "reps": 10, "load": 130},
+        {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 120},
+        {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Forearm curl", "sets": 2, "reps": 10, "load": 120}
     ]
@@ -57,7 +53,7 @@ saturday = {
     "day": "Saturday",
     "focus": "Legs",
     "exercises": [
-        {"name": "Squat", "sets": 4, "reps": 10, "load": 265},
+        {"name": "Squat", "sets": 4, "reps": 10, "load": 260},
         {"name": "Leg extension", "sets": 3, "reps": 10, "load": 140},
         {"name": "Leg curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Calf raise", "sets": 4, "reps": 12, "load": 150}
@@ -133,7 +129,8 @@ def train_intensity_classifier(week):
 
 def predict_workout_intensity(model, sets, reps, load):
     """Predicts the intensity classification for a hypothetical new exercise."""
-    prediction = model.predict([[sets, reps, load]])[0]
+    input_df = pd.DataFrame([[sets, reps, load]], columns=["sets", "reps", "load"])
+    prediction = model.predict(input_df)[0]
     print(f"  Predicted intensity for {sets}x{reps} @ {load}lbs: {prediction}")
     return prediction 
 
@@ -397,7 +394,7 @@ def predict_next_week():
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=2)
+save_history(name, week, week_number=3)
 view_history()
 
 predict_next_week()
@@ -406,9 +403,9 @@ intensity_model = train_intensity_classifier(week)
 predict_workout_intensity(intensity_model, sets=4, reps=8, load=180) #example prediction
 predict_workout_intensity(intensity_model, sets=3, reps=12, load=30) #another example prediction
 
-df = pandas_analysis(week, week_number=2)
+df = pandas_analysis(week, week_number=3)
 
-plot_weekly_volume(week, week_number=2, name=name)
+plot_weekly_volume(week, week_number=3, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
