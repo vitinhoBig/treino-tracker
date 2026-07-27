@@ -28,36 +28,61 @@ print(f"Goal: {goal_days} days/week, {goal_sets} sets/workout")
 tuesday = {
     "day": "Tuesday",
     "focus": "Chest, shoulders and triceps",
+    "wellness": {
+        "sleep_hours": 8.0,
+        "water_liters": 3.0,
+        "rpe": 7,              # Rate of Perceived Exertion (1-10)
+        "calories": 2900,
+        "protein_g": 180
+    },
     "exercises": [
         {"name": "Incline bench press", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Flat bench press", "sets": 3, "reps": 8, "load": 175},
-        {"name": "Chest fly", "sets": 2, "reps": 10, "load": 115},
-    ]
+        {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 180},
+        {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
+        {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 25},
+        {"name": "French press", "sets": 3, "reps": 10, "load": 110},
+        {"name": "Triceps pushdown", "sets": 2, "reps": 8, "load": 130}
 
+    ]
 }
 
 thursday = {
     "day": "Thursday",
     "focus": "Back and biceps",
+    "wellness": {
+        "sleep_hours": 7.5,
+        "water_liters": 2.5,
+        "rpe": 9, 
+        "calories": 3000,
+        "protein_g": 180
+    },
     "exercises": [
         {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 175},
         {"name": "Bent-over row", "sets": 3, "reps": 10, "load": 130},
-        {"name": "Single-arm row", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 120},
+        {"name": "Cable pullover", "sets": 3, "reps": 10, "load": 120},
         {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Forearm curl", "sets": 2, "reps": 10, "load": 120}
+        {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 130},
+    
     ]
 }
 
 saturday = {
     "day": "Saturday",
     "focus": "Legs",
+    "wellness": {
+        "sleep_hours": 8.0,
+        "water_liters": 2.0,
+        "rpe": 9,
+        "calories": 2950,
+        "protein_g": 172
+
+    },
     "exercises": [
-        {"name": "Squat", "sets": 4, "reps": 10, "load": 260},
+        {"name": "Squat", "sets": 3, "reps": 8, "load": 275},
         {"name": "Leg extension", "sets": 3, "reps": 10, "load": 140},
         {"name": "Leg curl", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Calf raise", "sets": 4, "reps": 12, "load": 150}
+        {"name": "Calf raise", "sets": 3, "reps": 12, "load": 150},
+        {"name": "Legs adductor", "sets": 2, "reps":10, "load": 100}
     ]
 }
 
@@ -81,6 +106,22 @@ def total_volume(day):
     for ex in day["exercises"]:
         total += ex["sets"] * ex["reps"] * ex["load"]  # sets x reps x load
     return total
+
+def get_wellness_summary(week):
+    """Averages wellness metric across the week's training days."""
+    sleep    = [d["wellness"]["sleep_hours"] for d in week]
+    water    = [d["wellness"]["water_liters"] for d in week]
+    rpe      = [d["wellness"]["rpe"] for d in week]
+    calories = [d["wellness"]["calories"] for d in week]
+    protein  = [d["wellness"]["protein_g"] for d in week]
+
+    return {
+        "avg_sleep_hours":  round(np.mean(sleep), 1),
+        "avg_water_liters": round(np.mean(water), 1),
+        "avg_rpe":          round(np.mean(rpe), 1),
+        "avg_calories":     round(np.mean(calories)),
+        "avg_protein_g":    round(np.mean(protein))
+    }
 
 def create_dataframe(week):
     """Converts the training week into a pandas DataFrame."""
@@ -328,12 +369,18 @@ def weekly_report(name, workouts, goal_sets):
 def save_history(name, week, week_number):
     """Saves the week's history to history.json"""
 
-    record = {
-        "week":          week_number,
-        "athlete":       name,
-        "total_sets":    sum(total_sets(d) for d in week),
-        "total_volume":  sum(total_volume(d) for d in week),
+    wellness = get_wellness_summary(week)
 
+    record = {
+        "week":             week_number,
+        "athlete":          name,
+        "total_sets":       sum(total_sets(d) for d in week),
+        "total_volume":     sum(total_volume(d) for d in week),
+        "avg_sleep_hours":  wellness["avg_sleep_hours"],
+        "avg_water_liters": wellness["avg_water_liters"],
+        "avg_rpe":          wellness["avg_rpe"],
+        "avg_calories":     wellness["avg_calories"],
+        "avg_protein_g":    wellness["avg_protein_g"],
     }
 
     try:
@@ -369,7 +416,8 @@ def view_history():
 
     print("\n--- Workout history ---")
     for w in history:
-        print(f"Week {w['week']}: {w['total_sets']} sets | {w['total_volume']} lbs")
+        print(f"Week {w['week']}: {w['total_sets']} sets | {w['total_volume']} lbs | "
+              f"sleep {w.get('avg_sleep_hours', '?')}h | RPE {w.get('avg_rpe', '?')}")
 
     if len(history) >= 2:
         diff = history[-1]["total_volume"] - history[-2]["total_volume"]
@@ -413,7 +461,7 @@ def predict_next_week():
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=3)
+save_history(name, week, week_number=4)
 view_history()
 
 predict_next_week()
@@ -424,9 +472,9 @@ predict_workout_intensity(intensity_model, sets=3, reps=12, load=30) #another ex
 
 clustered_df = cluster_exercises(week, n_clusters=3)
 
-df = pandas_analysis(week, week_number=3)
+df = pandas_analysis(week, week_number=4)
 
-plot_weekly_volume(week, week_number=3, name=name)
+plot_weekly_volume(week, week_number=4, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
