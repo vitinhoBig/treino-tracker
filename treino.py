@@ -1,3 +1,4 @@
+from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -133,6 +134,24 @@ def predict_workout_intensity(model, sets, reps, load):
     prediction = model.predict(input_df)[0]
     print(f"  Predicted intensity for {sets}x{reps} @ {load}lbs: {prediction}")
     return prediction 
+
+def cluster_exercises(week, n_clusters=3):
+    """Groups exercises into natural clusters using K-Means, based on sets, reps, and load."""
+    df = create_dataframe(week)
+    X = df[["sets", "reps", "load"]]
+
+    model = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+    df["cluster"] = model.fit_predict(X)
+
+    print(f"\n--- Exercise clusters ---")
+    for c in sorted(df["cluster"].unique()):
+        group = df[df["cluster"] == c]
+        avg_load = group["load"].mean()
+        print(f"  Cluster {c} ({len(group)} exercises) - avg load: {avg_load:.0f} lbs")
+        for exercise_name in group["name"]:
+            print(f"      - {exercise_name}")
+
+    return df
 
 def pandas_analysis(week, week_number):
     """Generates a full weekly analysis using Pandas and Numpy."""
@@ -402,6 +421,8 @@ predict_next_week()
 intensity_model = train_intensity_classifier(week)
 predict_workout_intensity(intensity_model, sets=4, reps=8, load=180) #example prediction
 predict_workout_intensity(intensity_model, sets=3, reps=12, load=30) #another example prediction
+
+clustered_df = cluster_exercises(week, n_clusters=3)
 
 df = pandas_analysis(week, week_number=3)
 
