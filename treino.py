@@ -1,3 +1,4 @@
+from sklearn.model_selection import cross_val_score
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -175,6 +176,27 @@ def predict_workout_intensity(model, sets, reps, load):
     prediction = model.predict(input_df)[0]
     print(f"  Predicted intensity for {sets}x{reps} @ {load}lbs: {prediction}")
     return prediction 
+
+def diagnose_classifier(week):
+    """Runs a full diagnostic on the intensity classifier using cross-validation, instead of trusting a single accuracy score."""
+    df = create_dataframe(week)
+    df["intensity"] = df["load"].apply(classify_load)
+
+    X = df[["sets", "reps", "load"]]
+    y = df["intensity"]
+
+    print(f"\n--- Classifier diagnostic ---")
+    print(f"  Dataset size: {len(df)} exercises")
+
+    cv = min(5, len(df) // 3) 
+    if cv < 2:
+        print("  Not enough data for cross-validation yet.")
+        return
+
+    for depth in [2, 3, 5]:
+        model = RandomForestClassifier(max_depth=depth, n_estimators=100, random_state=42)
+        scores = cross_val_score(model, X, y, cv=cv)
+        print (f"  max_depth={depth}: {scores.mean()*100:.0f}% (+/- {scores.std()*100:.0f}%)")
 
 def cluster_exercises(week, n_clusters=3):
     """Groups exercises into natural clusters using K-Means, based on sets, reps, and load."""
@@ -469,6 +491,8 @@ predict_next_week()
 intensity_model = train_intensity_classifier(week)
 predict_workout_intensity(intensity_model, sets=4, reps=8, load=180) #example prediction
 predict_workout_intensity(intensity_model, sets=3, reps=12, load=30) #another example prediction
+
+diagnose_classifier(week)
 
 clustered_df = cluster_exercises(week, n_clusters=3)
 
