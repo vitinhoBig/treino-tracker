@@ -32,17 +32,18 @@ tuesday = {
     "wellness": {
         "sleep_hours": 8.0,
         "water_liters": 3.0,
-        "rpe": 7,              # Rate of Perceived Exertion (1-10)
-        "calories": 2900,
-        "protein_g": 180
+        "rpe": 9,              # Rate of Perceived Exertion (1-10)
+        "calories": 2060,
+        "protein_g": 169
     },
     "exercises": [
-        {"name": "Incline bench press", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 180},
+        {"name": "Incline bench press", "sets": 3, "reps": 8, "load": 150},
+        {"name": "Flat bench press", "sets": 2, "reps": 12, "load": 165},
         {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
         {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 25},
+        {"name": "Cable front raises", "sets": 3, "reps": 12, "load": 45},
         {"name": "French press", "sets": 3, "reps": 10, "load": 110},
-        {"name": "Triceps pushdown", "sets": 2, "reps": 8, "load": 130}
+        {"name": "Triceps pushdown", "sets": 2, "reps": 10, "load": 130}
 
     ]
 }
@@ -54,15 +55,18 @@ thursday = {
         "sleep_hours": 7.5,
         "water_liters": 2.5,
         "rpe": 9, 
-        "calories": 3000,
-        "protein_g": 180
+        "calories": 2427,
+        "protein_g": 139
     },
     "exercises": [
         {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 175},
-        {"name": "Bent-over row", "sets": 3, "reps": 10, "load": 130},
-        {"name": "Cable pullover", "sets": 3, "reps": 10, "load": 120},
+        {"name": "T-bar row", "sets": 3, "reps": 10, "load": 140},
+        {"name": "Single arm row", "sets": 3, "reps": 10, "load": 140},
+        {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 120},
         {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 130},
+        {"name": "Wrist curl", "sets": 1, "reps": 12, "load": 120},
+        {"name": "Reverse cable curl", "sets": 1, "reps": 12, "load": 90}
     
     ]
 }
@@ -72,10 +76,10 @@ saturday = {
     "focus": "Legs",
     "wellness": {
         "sleep_hours": 8.0,
-        "water_liters": 2.0,
+        "water_liters": 3.0,
         "rpe": 9,
-        "calories": 2950,
-        "protein_g": 172
+        "calories": 2648,
+        "protein_g": 174
 
     },
     "exercises": [
@@ -483,7 +487,7 @@ def predict_next_week():
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=4)
+save_history(name, week, week_number=5)
 view_history()
 
 predict_next_week()
@@ -496,9 +500,9 @@ diagnose_classifier(week)
 
 clustered_df = cluster_exercises(week, n_clusters=3)
 
-df = pandas_analysis(week, week_number=4)
+df = pandas_analysis(week, week_number=5)
 
-plot_weekly_volume(week, week_number=4, name=name)
+plot_weekly_volume(week, week_number=5, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
