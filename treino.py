@@ -33,16 +33,16 @@ tuesday = {
         "sleep_hours": 8.0,
         "water_liters": 3.0,
         "rpe": 9,              # Rate of Perceived Exertion (1-10)
-        "calories": 2060,
-        "protein_g": 169
+        "calories": 2309,
+        "protein_g": 152
     },
     "exercises": [
         {"name": "Incline bench press", "sets": 3, "reps": 8, "load": 150},
-        {"name": "Flat bench press", "sets": 2, "reps": 12, "load": 165},
+        {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 175},
         {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
         {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 25},
         {"name": "Cable front raises", "sets": 3, "reps": 12, "load": 45},
-        {"name": "French press", "sets": 3, "reps": 10, "load": 110},
+        {"name": "French press", "sets": 3, "reps": 10, "load": 120},
         {"name": "Triceps pushdown", "sets": 2, "reps": 10, "load": 130}
 
     ]
@@ -55,18 +55,18 @@ thursday = {
         "sleep_hours": 7.5,
         "water_liters": 2.5,
         "rpe": 9, 
-        "calories": 2427,
-        "protein_g": 139
+        "calories": 2396,
+        "protein_g": 140
     },
     "exercises": [
         {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 175},
-        {"name": "T-bar row", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Single arm row", "sets": 3, "reps": 10, "load": 140},
+        {"name": "T-bar row", "sets": 3, "reps": 10, "load": 145},
+        {"name": "Single arm row", "sets": 3, "reps": 10, "load": 145},
         {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 120},
         {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 130},
-        {"name": "Wrist curl", "sets": 1, "reps": 12, "load": 120},
-        {"name": "Reverse cable curl", "sets": 1, "reps": 12, "load": 90}
+        {"name": "Wrist curl", "sets": 2, "reps": 12, "load": 125},
+        {"name": "Reverse cable curl", "sets": 2, "reps": 12, "load": 95}
     
     ]
 }
@@ -78,16 +78,15 @@ saturday = {
         "sleep_hours": 8.0,
         "water_liters": 3.0,
         "rpe": 9,
-        "calories": 2648,
-        "protein_g": 174
+        "calories": 2193,
+        "protein_g": 142
 
     },
     "exercises": [
-        {"name": "Squat", "sets": 3, "reps": 8, "load": 275},
+        {"name": "Squat", "sets": 3, "reps": 10, "load": 265},
         {"name": "Leg extension", "sets": 3, "reps": 10, "load": 140},
         {"name": "Leg curl", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Calf raise", "sets": 3, "reps": 12, "load": 150},
-        {"name": "Legs adductor", "sets": 2, "reps":10, "load": 100}
+        {"name": "Legs adductor", "sets": 3, "reps":10, "load": 100}
     ]
 }
 
@@ -483,14 +482,45 @@ def predict_next_week():
     else:
         print("  Volume is holding steady.")
 
+def predict_with_wellness():
+    """Compares a simple model (week only) vs an enriched model (+ sleep, RPE)."""
+    try:
+        with open(get_path("history.json"), "r") as f:
+            history = json.load(f)
+    except FileNotFoundError:
+        print("\nNo history found yet.")
+        return
+
+    #only use weeks that have complete wellness data
+    complete = [w for w in history if "avg_sleep_hours" in w]
+
+    if len(complete) < 4:
+        print(f"\nOnly {len(complete)} weeks with wellness data.")
+        print("Need at least 4 for a meaningful comparison - keep logging!")
+        return
+
+    X_simple = [[w["week"]] for w in complete]
+    X_rich   = [[w["week"], w["avg_sleep_hours"], w["avg_rpe"]] for w in complete]
+    y = [w["total_volume"] for w in complete]
+
+    model_simple = LinearRegression().fit(X_simple, y)
+    model_rich   = LinearRegression().fit(X_rich, y)
+
+    print(f"\n --- Feature comparison ({len(complete)} weeks with wellnes) ---")
+    print(f"  Simple (week only):     R2 = {model_simple.score(X_simple, y):.2f}")
+    print(f"  Enriched (+sleep, RPE): R2 = {model_rich.score(X_rich, y):.2f}")
+    print(f"  (More weeks needed before trusting which model is really better)")
+
 # call the report — last lines of the file
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=5)
+save_history(name, week, week_number=6)
 view_history()
 
 predict_next_week()
+
+predict_with_wellness()  
 
 intensity_model = train_intensity_classifier(week)
 predict_workout_intensity(intensity_model, sets=4, reps=8, load=180) #example prediction
@@ -500,9 +530,9 @@ diagnose_classifier(week)
 
 clustered_df = cluster_exercises(week, n_clusters=3)
 
-df = pandas_analysis(week, week_number=5)
+df = pandas_analysis(week, week_number=6)
 
-plot_weekly_volume(week, week_number=5, name=name)
+plot_weekly_volume(week, week_number=6, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
