@@ -17,7 +17,7 @@ def get_path(filename):
     return os.path.join(SCRIPT_DIR, filename)
 
 name = "Victor"
-weight = 175.0
+weight = 158.7
 goal_days = 3
 goal_sets = 15
 
@@ -37,13 +37,11 @@ tuesday = {
         "protein_g": 152
     },
     "exercises": [
-        {"name": "Incline bench press", "sets": 3, "reps": 8, "load": 150},
-        {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 175},
-        {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
+        {"name": "Incline bench press", "sets": 3, "reps": 8, "load": 160},
+        {"name": "Flat bench press", "sets": 3, "reps": 8, "load": 175},
         {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 25},
-        {"name": "Cable front raises", "sets": 3, "reps": 12, "load": 45},
         {"name": "French press", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Triceps pushdown", "sets": 2, "reps": 10, "load": 130}
+        {"name": "Triceps pushdown", "sets": 2, "reps": 8, "load": 140}
 
     ]
 }
@@ -55,38 +53,39 @@ thursday = {
         "sleep_hours": 7.5,
         "water_liters": 2.5,
         "rpe": 9, 
-        "calories": 2396,
+        "calories": 2180,
         "protein_g": 140
     },
     "exercises": [
         {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 175},
         {"name": "T-bar row", "sets": 3, "reps": 10, "load": 145},
-        {"name": "Single arm row", "sets": 3, "reps": 10, "load": 145},
+        {"name": "Single arm row", "sets": 3, "reps": 10, "load": 150},
         {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 120},
         {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 130},
-        {"name": "Wrist curl", "sets": 2, "reps": 12, "load": 125},
-        {"name": "Reverse cable curl", "sets": 2, "reps": 12, "load": 95}
+    
     
     ]
 }
 
 saturday = {
     "day": "Saturday",
-    "focus": "Legs",
+    "focus": "Posterior chain and glutes",
     "wellness": {
         "sleep_hours": 8.0,
         "water_liters": 3.0,
-        "rpe": 9,
-        "calories": 2193,
-        "protein_g": 142
+        "rpe": 8,
+        "calories": 2513,
+        "protein_g": 135
 
     },
     "exercises": [
-        {"name": "Squat", "sets": 3, "reps": 10, "load": 265},
-        {"name": "Leg extension", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Leg curl", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Legs adductor", "sets": 3, "reps":10, "load": 100}
+        {"name": "Hip thrust", "sets": 3, "reps": 10, "load": 190},
+        {"name": "Stiff leg deadlift", "sets": 3, "reps": 10, "load": 140},
+        {"name": "Single Leg curl", "sets": 3, "reps": 10, "load": 60},
+        {"name": "Legs adductor", "sets": 3, "reps":10, "load": 120},
+        {"name": "Leg curl", "sets": 3, "reps": 10, "load": 125}, 
+        {"name": "Standing calf raises", "sets": 3, "reps": 12, "load": 65}
     ]
 }
 
@@ -515,7 +514,7 @@ def predict_with_wellness():
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=6)
+save_history(name, week, week_number=7)
 view_history()
 
 predict_next_week()
@@ -530,9 +529,9 @@ diagnose_classifier(week)
 
 clustered_df = cluster_exercises(week, n_clusters=3)
 
-df = pandas_analysis(week, week_number=6)
+df = pandas_analysis(week, week_number=7)
 
-plot_weekly_volume(week, week_number=6, name=name)
+plot_weekly_volume(week, week_number=7, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
