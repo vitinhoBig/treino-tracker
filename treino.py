@@ -32,16 +32,18 @@ tuesday = {
     "wellness": {
         "sleep_hours": 8.0,
         "water_liters": 3.0,
-        "rpe": 9,              # Rate of Perceived Exertion (1-10)
-        "calories": 2309,
-        "protein_g": 152
+        "rpe": 10,              # Rate of Perceived Exertion (1-10)
+        "calories": 2114,
+        "protein_g": 137
     },
     "exercises": [
-        {"name": "Incline bench press", "sets": 3, "reps": 8, "load": 160},
-        {"name": "Flat bench press", "sets": 3, "reps": 8, "load": 175},
+        {"name": "Incline bench press", "sets": 3, "reps": 10, "load": 150},
+        {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 175},
+        {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
         {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 25},
+        {"name": "Cable front raises", "sets": 3, "reps": 10, "load": 50},
         {"name": "French press", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Triceps pushdown", "sets": 2, "reps": 8, "load": 140}
+        {"name": "Triceps pushdown", "sets": 2, "reps": 10, "load": 140}
 
     ]
 }
@@ -50,18 +52,18 @@ thursday = {
     "day": "Thursday",
     "focus": "Back and biceps",
     "wellness": {
-        "sleep_hours": 7.5,
+        "sleep_hours": 8.0,
         "water_liters": 2.5,
         "rpe": 9, 
-        "calories": 2180,
-        "protein_g": 140
+        "calories": 2380,
+        "protein_g": 144
     },
     "exercises": [
         {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 175},
         {"name": "T-bar row", "sets": 3, "reps": 10, "load": 145},
         {"name": "Single arm row", "sets": 3, "reps": 10, "load": 150},
         {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 120},
-        {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
+        {"name": "Bicep curl", "sets": 3, "reps": 10, "load": 130},
         {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 130},
     
     
@@ -70,22 +72,20 @@ thursday = {
 
 saturday = {
     "day": "Saturday",
-    "focus": "Posterior chain and glutes",
+    "focus": "Legs",
     "wellness": {
         "sleep_hours": 8.0,
         "water_liters": 3.0,
-        "rpe": 8,
+        "rpe": 10,
         "calories": 2513,
-        "protein_g": 135
+        "protein_g": 140
 
     },
     "exercises": [
-        {"name": "Hip thrust", "sets": 3, "reps": 10, "load": 190},
-        {"name": "Stiff leg deadlift", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Single Leg curl", "sets": 3, "reps": 10, "load": 60},
-        {"name": "Legs adductor", "sets": 3, "reps":10, "load": 120},
+        {"name": "Squats", "sets": 4, "reps": 10, "load": 240},
+        {"name": "Leg extension", "sets": 3, "reps": 10, "load": 140},
         {"name": "Leg curl", "sets": 3, "reps": 10, "load": 125}, 
-        {"name": "Standing calf raises", "sets": 3, "reps": 12, "load": 65}
+        {"name": "Calf raise", "sets": 3, "reps": 12, "load": 160}
     ]
 }
 
@@ -514,7 +514,7 @@ def predict_with_wellness():
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=7)
+save_history(name, week, week_number=8)
 view_history()
 
 predict_next_week()
@@ -529,9 +529,9 @@ diagnose_classifier(week)
 
 clustered_df = cluster_exercises(week, n_clusters=3)
 
-df = pandas_analysis(week, week_number=7)
+df = pandas_analysis(week, week_number=8)
 
-plot_weekly_volume(week, week_number=7, name=name)
+plot_weekly_volume(week, week_number=8, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
