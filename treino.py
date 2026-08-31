@@ -465,7 +465,7 @@ def predict_next_week():
     weeks_list = [w["week"] for w in history]
     volumes = [w["total_volume"] for w in history]
 
-    # anomaly detection using z-score
+    # anomaly detection using over the FULL history - useful context, even if not used for the fit
     mean = np.mean(volumes)
     std = np.std(volumes)
     z_scores = (volumes - mean) / std if std > 0 else np.zeros(len(volumes))
@@ -475,12 +475,17 @@ def predict_next_week():
     if anomalies:
         print(f"  Note: week(s) {anomalies} look unusual (more than 1 std from average) - trend may be skewed by them.")
 
+    # fit the trend only on the most recent weeks, so old spikes/dips don't dominate
+    recent_n = min(5, len(history))
+    recent_weeks = weeks_list[-recent_n:]
+    recent_volumes = volumes[-recent_n:]
+
     # smooth with a rolling average before fitting the trend, once there's enough history
-    window = 3
-    volume_series = pd.Series(volumes)
+    window = min(3, recent_n)   # rolling with window size
+    volume_series = pd.Series(recent_volumes)
     rolling = volume_series.rolling(window=window, min_periods=1).mean()
 
-    weeks_for_fit = [[w] for w in weeks_list]
+    weeks_for_fit = [[w] for w in recent_weeks]
     y_for_fit = rolling.tolist()
     smoothing_note = f" (smoothed, {window}-week rolling average)" if len(history) >= window else ""
 
