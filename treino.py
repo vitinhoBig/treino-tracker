@@ -449,7 +449,8 @@ def view_history():
         print(f"\n   Change vs previous week: {sign}{diff} lbs")
 
 def predict_next_week():
-    """Predicts the next week's total volume using linear regression on history.json."""
+    """Predicts the next week's total volume using linear regression on a rolling-average-smoothed
+    trend, and flags weeks that look anomalous (like illness weeks) using z-scores."""
     try:
         with open(get_path("history.json"), "r") as f:
             history = json.load(f)
@@ -461,17 +462,35 @@ def predict_next_week():
         print("\nNo history found yet - can't predict.")
         return
     
-    weeks = [[w["week"]] for w in history]
+    weeks_list = [w["week"] for w in history]
     volumes = [w["total_volume"] for w in history]
 
+    # anomaly detection using z-score
+    mean = np.mean(volumes)
+    std = np.std(volumes)
+    z_scores = (volumes - mean) / std if std > 0 else np.zeros(len(volumes))
+    anomalies = [weeks_list[i] for i in range(len(volumes)) if abs(z_scores[i]) > 1]
+
+    print(f"\n--- Volume prediction ---")
+    if anomalies:
+        print(f"  Note: week(s) {anomalies} look unusual (more than 1 std from average) - trend may be skewed by them.")
+
+    # smooth with a rolling average before fitting the trend, once there's enough history
+    window = 3
+    volume_series = pd.Series(volumes)
+    rolling = volume_series.rolling(window=window, min_periods=1).mean()
+
+    weeks_for_fit = [[w] for w in weeks_list]
+    y_for_fit = rolling.tolist()
+    smoothing_note = f" (smoothed, {window}-week rolling average)" if len(history) >= window else ""
+
     model = LinearRegression()
-    model.fit(weeks, volumes)
-    next_week = history[-1]["week"] + 1
+    model.fit(weeks_for_fit, y_for_fit)
+    next_week = weeks_list[-1] + 1
     prediction = model.predict([[next_week]])[0]
     trend = model.coef_[0]
 
-    print(f"\n--- Volume prediction ---")
-    print(f"  Predicted volume for week {next_week}: {prediction:.1f} lbs")
+    print(f"  Predicted volume for week {next_week}: {prediction:.1f} lbs{smoothing_note}")
     print(f"  Weekly trend: {trend:+.1f} lbs/week")
 
     if trend > 0:
@@ -505,7 +524,7 @@ def predict_with_wellness():
     model_simple = LinearRegression().fit(X_simple, y)
     model_rich   = LinearRegression().fit(X_rich, y)
 
-    print(f"\n --- Feature comparison ({len(complete)} weeks with wellnes) ---")
+    print(f"\n --- Feature comparison ({len(complete)} weeks with wellness data) ---")
     print(f"  Simple (week only):     R2 = {model_simple.score(X_simple, y):.2f}")
     print(f"  Enriched (+sleep, RPE): R2 = {model_rich.score(X_rich, y):.2f}")
     print(f"  (More weeks needed before trusting which model is really better)")
