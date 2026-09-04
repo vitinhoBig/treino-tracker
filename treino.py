@@ -32,16 +32,16 @@ tuesday = {
     "wellness": {
         "sleep_hours": 8.0,
         "water_liters": 3.0,
-        "rpe": 10,              # Rate of Perceived Exertion (1-10)
-        "calories": 2114,
-        "protein_g": 137
+        "rpe": 9,              # Rate of Perceived Exertion (1-10)
+        "calories": 2414,
+        "protein_g": 148
     },
     "exercises": [
-        {"name": "Incline bench press", "sets": 3, "reps": 10, "load": 150},
+        {"name": "Incline bench press", "sets": 3, "reps": 8, "load": 155},
         {"name": "Flat bench press", "sets": 2, "reps": 8, "load": 175},
         {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
-        {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 25},
-        {"name": "Cable front raises", "sets": 3, "reps": 10, "load": 50},
+        {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 30},
+        {"name": "Cable front raises", "sets": 3, "reps": 8, "load": 60},
         {"name": "French press", "sets": 3, "reps": 10, "load": 120},
         {"name": "Triceps pushdown", "sets": 2, "reps": 10, "load": 140}
 
@@ -55,16 +55,18 @@ thursday = {
         "sleep_hours": 8.0,
         "water_liters": 2.5,
         "rpe": 9, 
-        "calories": 2380,
-        "protein_g": 144
+        "calories": 2415,
+        "protein_g": 173
     },
     "exercises": [
         {"name": "Lat pulldown", "sets": 3, "reps": 10, "load": 175},
         {"name": "T-bar row", "sets": 3, "reps": 10, "load": 145},
         {"name": "Single arm row", "sets": 3, "reps": 10, "load": 150},
         {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 120},
-        {"name": "Bicep curl", "sets": 3, "reps": 10, "load": 130},
+        {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 130},
+        {"name": "Wrist curl", "sets": 2, "reps": 10, "load": 130},
+        {"name": "Reverse cable curl", "sets": 2, "reps":10, "load": 90}
     
     
     ]
@@ -77,15 +79,16 @@ saturday = {
         "sleep_hours": 8.0,
         "water_liters": 3.0,
         "rpe": 10,
-        "calories": 2513,
-        "protein_g": 140
+        "calories": 2380,
+        "protein_g": 157
 
     },
     "exercises": [
-        {"name": "Squats", "sets": 4, "reps": 10, "load": 240},
-        {"name": "Leg extension", "sets": 3, "reps": 10, "load": 140},
-        {"name": "Leg curl", "sets": 3, "reps": 10, "load": 125}, 
-        {"name": "Calf raise", "sets": 3, "reps": 12, "load": 160}
+        {"name": "Squats", "sets": 4, "reps": 6, "load": 275},
+        {"name": "Leg extension", "sets": 3, "reps": 10, "load": 150},
+        {"name": "Leg curl", "sets": 3, "reps": 10, "load": 135}, 
+        {"name": "Calf raise", "sets": 3, "reps": 12, "load": 160},
+        {"name": "Machine leg press", "sets": 3, "reps": 8, "load": 200}
     ]
 }
 
@@ -449,8 +452,9 @@ def view_history():
         print(f"\n   Change vs previous week: {sign}{diff} lbs")
 
 def predict_next_week():
-    """Predicts the next week's total volume using linear regression on a rolling-average-smoothed
-    trend, and flags weeks that look anomalous (like illness weeks) using z-scores."""
+    """Predicts the next week's total volume using a recency-weighted linear regression 
+    over the most recent weeks (recent weeks count more), and flags nomalous weeks 
+    using z-scores over the full history."""
     try:
         with open(get_path("history.json"), "r") as f:
             history = json.load(f)
@@ -463,7 +467,7 @@ def predict_next_week():
         return
     
     weeks_list = [w["week"] for w in history]
-    volumes = [w["total_volume"] for w in history]
+    volumes = np.array([w["total_volume"] for w in history])
 
     # anomaly detection using over the FULL history - useful context, even if not used for the fit
     mean = np.mean(volumes)
@@ -475,32 +479,31 @@ def predict_next_week():
     if anomalies:
         print(f"  Note: week(s) {anomalies} look unusual (more than 1 std from average) - trend may be skewed by them.")
 
-    # fit the trend only on the most recent weeks, so old spikes/dips don't dominate
+    # fit only on the most recent weeks, using the RAW volumes (no rolling average) -
+    # smoothing and recency-weighting were fighting each other)
     recent_n = min(5, len(history))
     recent_weeks = weeks_list[-recent_n:]
     recent_volumes = volumes[-recent_n:]
 
-    # smooth with a rolling average before fitting the trend, once there's enough history
-    window = min(3, recent_n)   # rolling with window size
-    volume_series = pd.Series(recent_volumes)
-    rolling = volume_series.rolling(window=window, min_periods=1).mean()
-
     weeks_for_fit = [[w] for w in recent_weeks]
-    y_for_fit = rolling.tolist()
-    smoothing_note = f" (smoothed, {window}-week rolling average)" if len(history) >= window else ""
+    y_for_fit = recent_volumes.tolist()
+
+    # recency weights: oldest week in the window = weight 1, most recent = weight recent_n
+    sample_weights = list(range(1, recent_n + 1))
 
     model = LinearRegression()
-    model.fit(weeks_for_fit, y_for_fit)
+    model.fit(weeks_for_fit, y_for_fit, sample_weight=sample_weights)
     next_week = weeks_list[-1] + 1
     prediction = model.predict([[next_week]])[0]
     trend = model.coef_[0]
 
-    print(f"  Predicted volume for week {next_week}: {prediction:.1f} lbs{smoothing_note}")
+    note = f" (last {recent_n} weeks, recency-weighted)"
+    print(f"  Predicted volume for week {next_week}: {prediction:.1f} lbs{note}")
     print(f"  Weekly trend: {trend:+.1f} lbs/week")
 
-    if trend > 0:
+    if trend > 100:
         print("  You're trending upward - keep it up!")
-    elif trend < 0:
+    elif trend < -100:
         print("  Volume is trending down - might be a good week to push harder.")
     else:
         print("  Volume is holding steady.")
@@ -538,7 +541,7 @@ def predict_with_wellness():
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=8)
+save_history(name, week, week_number=9)
 view_history()
 
 predict_next_week()
@@ -553,9 +556,9 @@ diagnose_classifier(week)
 
 clustered_df = cluster_exercises(week, n_clusters=3)
 
-df = pandas_analysis(week, week_number=8)
+df = pandas_analysis(week, week_number=9)
 
-plot_weekly_volume(week, week_number=8, name=name)
+plot_weekly_volume(week, week_number=9, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
