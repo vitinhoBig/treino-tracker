@@ -17,12 +17,12 @@ def get_path(filename):
     return os.path.join(SCRIPT_DIR, filename)
 
 name = "Victor"
-weight = 158.7
+starting_weight = 158.7
 goal_days = 3
 goal_sets = 15
 
 print(f"Athlete: {name}")
-print(f"Weight: {weight} lbs")
+print(f"Starting Weight: {starting_weight} lbs")
 print(f"Goal: {goal_days} days/week, {goal_sets} sets/workout")
 
 
@@ -34,16 +34,17 @@ tuesday = {
         "water_liters": 2.5,
         "rpe": 9,              # Rate of Perceived Exertion (1-10)
         "calories": 2240,
-        "protein_g": 119
+        "protein_g": 119,
+        "body_weight": 158.7,
+        "creatine_g": 5
     },
     "exercises": [
-        {"name": "Smith machine incline bench press", "sets": 3, "reps": 8, "load": 170},
-        {"name": "Flat bench press", "sets": 2, "reps": 6, "load": 180},
-        {"name": "Chest fly", "sets": 3, "reps": 10, "load": 115},
+        {"name": "Machine incline bench press", "sets": 3, "reps": 8, "load": 155},
+        {"name": "Decline fly", "sets": 3, "reps": 6, "load": 140},
+        {"name": "Chest fly", "sets": 3, "reps": 10, "load": 120},
         {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 30},
-        {"name": "Cable front raises", "sets": 2, "reps": 10, "load": 60},
         {"name": "French press", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Triceps pushdown", "sets": 2, "reps": 10, "load": 140}
+        {"name": "Triceps pushdown", "sets": 3, "reps": 10, "load": 140}
 
     ]
 }
@@ -56,7 +57,9 @@ thursday = {
         "water_liters": 2.5,
         "rpe": 9, 
         "calories": 1972,
-        "protein_g": 165
+        "protein_g": 165,
+        "body_weight_lbs": 159.3,
+        "creatine_g": 5
     },
     "exercises": [
         {"name": "Pull-up", "sets": 3, "reps": 10, "load": 160},
@@ -65,8 +68,8 @@ thursday = {
         {"name": "Cable pullover", "sets": 2, "reps": 10, "load": 120},
         {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
         {"name": "Dumbbell Hammer curl", "sets": 3, "reps": 10, "load": 100},
-        {"name": "Machine preacher curl", "sets": 2, "reps": 10, "load": 130},
-        {"name": "Single arm reverse pack deck", "sets": 2, "reps": 12, "load": 70}
+        {"name": "Reverse preacher curl", "sets": 2, "reps": 12, "load": 100},
+        {"name": "Wrist curl", "sets": 2, "reps": 12, "load": 140}
 
     
     
@@ -81,7 +84,9 @@ saturday = {
         "water_liters": 1.0,
         "rpe": 9,
         "calories": 2267,
-        "protein_g": 183
+        "protein_g": 183,
+        "body_weight_lbs": 158.7,
+        "creatine_g": 0
 
     },
     "exercises": [
@@ -114,19 +119,23 @@ def total_volume(day):
     return total
 
 def get_wellness_summary(week):
-    """Averages wellness metric across the week's training days."""
-    sleep    = [d["wellness"]["sleep_hours"] for d in week]
-    water    = [d["wellness"]["water_liters"] for d in week]
-    rpe      = [d["wellness"]["rpe"] for d in week]
-    calories = [d["wellness"]["calories"] for d in week]
-    protein  = [d["wellness"]["protein_g"] for d in week]
+    """Averages wellness metric across the week's training days.
+    Metrics missing from a day are skipped; returns None if no day has them."""
+    def avg(key, digits=None):
+        values = [d["wellness"][key] for d in week if key in d["wellness"]]
+        if not values:
+            return None
+        mean = float(np.mean(values))
+        return round(mean, digits) if digits is not None else round(mean)
 
     return {
-        "avg_sleep_hours":  round(np.mean(sleep), 1),
-        "avg_water_liters": round(np.mean(water), 1),
-        "avg_rpe":          round(np.mean(rpe), 1),
-        "avg_calories":     round(np.mean(calories)),
-        "avg_protein_g":    round(np.mean(protein))
+        "avg_sleep_hours":  avg("sleep_hours", 1),
+        "avg_water_liters": avg("water_liters", 1),
+        "avg_rpe":          avg("rpe", 1),
+        "avg_calories":     avg("calories"),
+        "avg_protein_g":    avg("protein_g"),
+        "avg_body_weight_lbs": avg("body_weight_lbs", 1),
+        "avg_creatine_g":      avg("creatine_g", 1)
     }
 
 def create_dataframe(week):
@@ -399,15 +408,17 @@ def save_history(name, week, week_number):
     wellness = get_wellness_summary(week)
 
     record = {
-        "week":             week_number,
-        "athlete":          name,
-        "total_sets":       sum(total_sets(d) for d in week),
-        "total_volume":     sum(total_volume(d) for d in week),
-        "avg_sleep_hours":  wellness["avg_sleep_hours"],
-        "avg_water_liters": wellness["avg_water_liters"],
-        "avg_rpe":          wellness["avg_rpe"],
-        "avg_calories":     wellness["avg_calories"],
-        "avg_protein_g":    wellness["avg_protein_g"],
+        "week":                week_number,
+        "athlete":             name,
+        "total_sets":          sum(total_sets(d) for d in week),
+        "total_volume":        sum(total_volume(d) for d in week),
+        "avg_sleep_hours":     wellness["avg_sleep_hours"],
+        "avg_water_liters":    wellness["avg_water_liters"],
+        "avg_rpe":             wellness["avg_rpe"],
+        "avg_calories":        wellness["avg_calories"],
+        "avg_protein_g":       wellness["avg_protein_g"],
+        "avg_body_weight_lbs": wellness["avg_body_weight_lbs"],
+        "avg_creatine_g":      wellness["avg_creatine_g"]
     }
 
     try:
@@ -443,8 +454,11 @@ def view_history():
 
     print("\n--- Workout history ---")
     for w in history:
+        bw = w.get("avg_body_weight_lbs")
+        cr = w.get("avg_creatine_g")
         print(f"Week {w['week']}: {w['total_sets']} sets | {w['total_volume']} lbs | "
-              f"sleep {w.get('avg_sleep_hours', '?')}h | RPE {w.get('avg_rpe', '?')}")
+              f"sleep {w.get('avg_sleep_hours', '?')}h | RPE {w.get('avg_rpe', '?')} | "
+              f"BW {bw if bw is not None else '?'} lbs | creatine {cr if cr is not None else '?'}g")
 
     if len(history) >= 2:
         diff = history[-1]["total_volume"] - history[-2]["total_volume"]
@@ -518,7 +532,11 @@ def predict_with_wellness():
         return
 
     #only use weeks that have complete wellness data
-    complete = [w for w in history if "avg_sleep_hours" in w]
+    complete = [
+        w for w in history 
+        if w.get("avg_sleep_hours") is not None and w.get("avg_rpe") is not None
+        ]
+
 
     if len(complete) < 4:
         print(f"\nOnly {len(complete)} weeks with wellness data.")
@@ -537,16 +555,96 @@ def predict_with_wellness():
     print(f"  Enriched (+sleep, RPE): R2 = {model_rich.score(X_rich, y):.2f}")
     print(f"  (More weeks needed before trusting which model is really better)")
 
+
+def weight_diet_creatine_report():
+    """Body weight vs diet, diet vs training volume, and a before/after creatine
+    comparison. Withholds conclusions until there is enough data."""
+    try:
+        with open(get_path("history.json"), "r") as f:
+            history = json.load(f)
+    except FileNotFoundError:
+        print("\nNo history found yet.")
+        return
+
+    # ---- Part 1: body weight vs diet ----
+    print("\n--- Body weight & diet ---")
+    tracked = [w for w in history if w.get("avg_body_weight_lbs") is not None]
+    if len(tracked) < 2:
+        print(f"  Only {len(tracked)} week(s) with body weight logged - keep logging!")
+    else:
+        print("  Week | Weight | Change | Calories | Protein | Volume per lb BW")
+        previous = None
+        for w in tracked:
+            bw = w["avg_body_weight_lbs"]
+            change = f"{bw - previous:+.1f}" if previous is not None else "-"
+            cal = w.get("avg_calories", "?")
+            prot = w.get("avg_protein_g", "?")
+            print(f"  {w['week']:>4} | {bw:>6.1f} | {change:>6} | {cal:>8} | {prot:>7} | {w['total_volume'] / bw:>8.0f}")
+            previous = bw
+        if len(tracked) >= 3:
+            weeks_x = [[w["week"]] for w in tracked]
+            weights_y = [w["avg_body_weight_lbs"] for w in tracked]
+            slope = LinearRegression().fit(weeks_x, weights_y).coef_[0]
+            print(f"  Weight trend: {slope:+.2f} lbs/week")
+
+    # ---- Part 2: diet vs training volume (uses weeks already logged) ----
+    print("\n--- Diet vs training volume ---")
+    for key, label in [("avg_calories", "calories"), ("avg_protein_g", "protein")]:
+        rows = [w for w in history if w.get(key) is not None]
+        if len(rows) < 6:
+            print(f"  Not enough weeks with {label} yet.")
+            continue
+        r = np.corrcoef([w[key] for w in rows], [w["total_volume"] for w in rows])[0, 1]
+        print(f"  {label} vs volume: r = {r:+.2f} ({len(rows)} weeks)")
+    print("  (With ~10 weeks, |r| needs to be above ~0.6 to stand out from chance."
+          " Correlation is not cause: heavier weeks may simply make you eat more.)")
+
+    # ---- Part 3: creatine before vs after ----
+    print("\n--- Creatine comparison ---")
+    on = [w for w in history if (w.get("avg_creatine_g") or 0) > 0]
+    if not on:
+        print("  No creatine logged yet.")
+        return
+
+    
+    start_week = on[0]["week"]
+    before = [w["total_volume"] for w in history if w["week"] < start_week][-8:]
+    after = [w["total_volume"] for w in on if w["week"] > start_week]
+    print(f"  Creatine started in week {start_week} (that week is excluded: transition + water weight)")
+
+    if len(before) < 3 or len(after) < 4:
+        print(f"  Have {len(before)} weeks before and {len(after)} full weeks after.")
+        print("  Need at least 3 before and 4 after - keep logging!")
+        return
+
+    mean_before, mean_after = np.mean(before), np.mean(after)
+    swing = np.std(before)
+    diff = mean_after - mean_before
+    print(f"  Before ({len(before)} wks): {mean_before:.0f} lbs/week")
+    print(f"  After  ({len(after)} wks): {mean_after:.0f} lbs/week")
+    print(f"  Difference: {diff:+.0f} lbs ({diff / mean_before * 100:+.1f}%)")
+    print(f"  Normal week-to-week swing before creatine: +/- {swing:.0f} lbs")
+    if abs(diff) < swing:
+        print("  The difference is smaller than normal variation - can't tell it apart from noise.")
+    else:
+        print("  The difference is larger than normal variation, but diet or exercise changes can still explain it.")
+
 # call the report — last lines of the file
+DRY_RUN = True     # True = just print, False = original data
+
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
-save_history(name, week, week_number=14)
+if not DRY_RUN:
+    save_history(name, week, week_number=14)      # records in history.json
+
 view_history()
 
 predict_next_week()
 
 predict_with_wellness()  
+
+weight_diet_creatine_report()
 
 intensity_model = train_intensity_classifier(week)
 predict_workout_intensity(intensity_model, sets=4, reps=8, load=180) #example prediction
@@ -556,9 +654,10 @@ diagnose_classifier(week)
 
 clustered_df = cluster_exercises(week, n_clusters=3)
 
-df = pandas_analysis(week, week_number=14)
+if not DRY_RUN:
+    df = pandas_analysis(week, week_number=14)
+    plot_weekly_volume(week, week_number=14, name=name)
 
-plot_weekly_volume(week, week_number=14, name=name)
 
 print("\n")
 load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
