@@ -10,6 +10,10 @@ import numpy as np
 import json
 import os
 
+# --- Weekly settings: update these every week ---
+WEEK_NUMBER = 16
+DRY_RUN = True         # True = test only (nothing is saved) | False = official weekly record
+
 # folder where the treino.py live - regardless of where the terminal is running from
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -636,7 +640,7 @@ week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
 if not DRY_RUN:
-    save_history(name, week, week_number=15)      # records in history.json
+    save_history(name, week, week_number=WEEK_NUMBER)      # records in history.json
 
 view_history()
 
@@ -655,8 +659,8 @@ diagnose_classifier(week)
 clustered_df = cluster_exercises(week, n_clusters=3)
 
 if not DRY_RUN:
-    df = pandas_analysis(week, week_number=15)
-    plot_weekly_volume(week, week_number=15, name=name)
+    df = pandas_analysis(week, week_number=WEEK_NUMBER)
+    plot_weekly_volume(week, week_number=WEEK_NUMBER, name=name)
 
 
 print("\n")
