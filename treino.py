@@ -80,17 +80,17 @@ saturday = {
     "day": "Saturday",
     "focus": "Legs",
     "wellness": {
-        "sleep_hours": 8.0,
+        "sleep_hours": 6.5,
         "water_liters": 1.0,
-        "rpe": 9,
-        "calories": 2267,
+        "rpe": 8,
+        "calories": 2367,
         "protein_g": 183,
-        "body_weight_lbs": 158.7,
-        "creatine_g": 0
+        "body_weight_lbs": 160.5,
+        "creatine_g": 5
 
     },
     "exercises": [
-        {"name": "Squats", "sets": 4, "reps": 10, "load": 260},
+        {"name": "Squats", "sets": 4, "reps": 10, "load": 230},
         {"name": "Leg extension", "sets": 3, "reps": 10, "load": 155},
         {"name": "Leg curl", "sets": 3, "reps": 8, "load": 135}, 
         {"name": "Calf raise", "sets": 3, "reps": 12, "load": 170},
@@ -630,13 +630,13 @@ def weight_diet_creatine_report():
         print("  The difference is larger than normal variation, but diet or exercise changes can still explain it.")
 
 # call the report — last lines of the file
-DRY_RUN = True     # True = just print, False = original data
+DRY_RUN = False     # True = just print, False = original data
 
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
 
 if not DRY_RUN:
-    save_history(name, week, week_number=14)      # records in history.json
+    save_history(name, week, week_number=15)      # records in history.json
 
 view_history()
 
@@ -655,13 +655,13 @@ diagnose_classifier(week)
 clustered_df = cluster_exercises(week, n_clusters=3)
 
 if not DRY_RUN:
-    df = pandas_analysis(week, week_number=14)
-    plot_weekly_volume(week, week_number=14, name=name)
+    df = pandas_analysis(week, week_number=15)
+    plot_weekly_volume(week, week_number=15, name=name)
 
 
 print("\n")
-load_progression("Squat", starting_load=130, goal_load=220, increment=5.0)
-plot_load_progression("Squat", starting_load =130, goal_load=220, increment=5.0)
+load_progression("Squats", starting_load=230, goal_load=280, increment=5.0)
+plot_load_progression("Squats", starting_load=230, goal_load=280, increment=5.0)
 
 load_progression("Flat bench press", starting_load=155, goal_load=200, increment=5.0)
 plot_load_progression("Flat bench press", starting_load=155, goal_load=200, increment=5.0)
