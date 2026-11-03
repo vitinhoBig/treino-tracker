@@ -11,8 +11,8 @@ import json
 import os
 
 # --- Weekly settings: update these every week ---
-WEEK_NUMBER = 16
-DRY_RUN = False        # True = test only (nothing is saved) | False = official weekly record
+WEEK_NUMBER = 17
+DRY_RUN = True       # True = test only (nothing is saved) | False = official weekly record
 
 # folder where the treino.py live - regardless of where the terminal is running from
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
