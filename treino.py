@@ -39,7 +39,7 @@ tuesday = {
         "rpe": 9,              # Rate of Perceived Exertion (1-10)
         "calories": 2250,
         "protein_g": 153,
-        "body_weight": 159.6,
+        "body_weight_lbs": 159.6,
         "creatine_g": 5
     },
     "exercises": [
@@ -311,6 +311,13 @@ def classify_workout(sets):
 
 def hit_goal(day, goal):
     return total_sets(day) >= goal
+
+def epley_e1rm(load, reps):
+    """Estimated one-rep max (Epley formula). Only valid for 1-12 reps."""
+    if reps < 1 or reps > 12 or load <= 0:
+        return None
+    else:
+        return round(load * (1 + reps / 30), 1)
 
 def workout_summary(day, goal):
     """Prints the full summary of a workout day"""
@@ -637,7 +644,6 @@ def weight_diet_creatine_report():
         print("  The difference is larger than normal variation, but diet or exercise changes can still explain it.")
 
 # call the report — last lines of the file
-DRY_RUN = False     # True = just print, False = original data
 
 week = [tuesday, thursday, saturday]
 weekly_report(name, week, goal_sets)
