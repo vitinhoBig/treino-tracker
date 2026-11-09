@@ -11,8 +11,8 @@ import json
 import os
 
 # --- Weekly settings: update these every week ---
-WEEK_NUMBER = 17
-DRY_RUN = False      # True = test only (nothing is saved) | False = official weekly record
+WEEK_NUMBER = 18
+DRY_RUN = True      # True = test only (nothing is saved) | False = official weekly record
 
 # folder where the treino.py live - regardless of where the terminal is running from
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -316,6 +316,8 @@ def epley_e1rm(load, reps):
     """Estimated one-rep max (Epley formula). Only valid for 1-12 reps."""
     if reps < 1 or reps > 12 or load <= 0:
         return None
+    if reps == 1:
+        return load
     else:
         return round(load * (1 + reps / 30), 1)
 
