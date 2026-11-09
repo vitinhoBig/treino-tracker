@@ -12,7 +12,7 @@ import os
 
 # --- Weekly settings: update these every week ---
 WEEK_NUMBER = 17
-DRY_RUN = True       # True = test only (nothing is saved) | False = official weekly record
+DRY_RUN = False      # True = test only (nothing is saved) | False = official weekly record
 
 # folder where the treino.py live - regardless of where the terminal is running from
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,19 +34,19 @@ tuesday = {
     "day": "Tuesday",
     "focus": "Chest, shoulders and triceps",
     "wellness": {
-        "sleep_hours": 7.0,
-        "water_liters": 3.0,
+        "sleep_hours": 8.5,
+        "water_liters": 2.5,
         "rpe": 9,              # Rate of Perceived Exertion (1-10)
         "calories": 2250,
         "protein_g": 153,
-        "body_weight": 158.7,
+        "body_weight": 159.6,
         "creatine_g": 5
     },
     "exercises": [
-        {"name": "Machine incline bench press", "sets": 3, "reps": 10, "load": 160},
+        {"name": "Machine incline bench press", "sets": 3, "reps": 10, "load": 165},
         {"name": "Bench press", "sets": 2, "reps": 5, "load": 180},
         {"name": "Chest fly", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Cable lateral raises", "sets": 3, "reps": 12, "load": 30},
+        {"name": "Dumbbell lateral raises", "sets": 3, "reps": 12, "load": 30},
         {"name": "Cable front raises", "sets": 2, "reps": 8, "load": 60},
         {"name": "French press", "sets": 3, "reps": 10, "load": 120},
         {"name": "Triceps pushdown", "sets": 3, "reps": 10, "load": 140}
@@ -58,12 +58,12 @@ thursday = {
     "day": "Thursday",
     "focus": "Back and biceps",
     "wellness": {
-        "sleep_hours": 7.0,
+        "sleep_hours": 8.0,
         "water_liters": 3.0,
         "rpe": 9, 
-        "calories": 2344,
+        "calories": 2334,
         "protein_g": 160,
-        "body_weight_lbs": 159.5,
+        "body_weight_lbs": 159.8,
         "creatine_g": 5
     },
     "exercises": [
@@ -72,7 +72,9 @@ thursday = {
         {"name": "Single arm row", "sets": 3, "reps": 10, "load": 150},
         {"name": "Cable pullover", "sets": 3, "reps": 10, "load": 120},
         {"name": "Incline bicep curl", "sets": 3, "reps": 10, "load": 120},
-        {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 120}
+        {"name": "Hammer curl", "sets": 3, "reps": 10, "load": 120},
+        {"name": "Reverse curl", "sets": 2, "reps": 10, "load": 90},
+        {"name": "Wrist curl", "sets": 2, "reps": 10, "load": 135}
         
 
     
@@ -84,20 +86,20 @@ saturday = {
     "day": "Saturday",
     "focus": "Legs",
     "wellness": {
-        "sleep_hours": 7.5,
-        "water_liters": 1.0,
-        "rpe": 8,
-        "calories": 2367,
-        "protein_g": 183,
-        "body_weight_lbs": 160.5,
+        "sleep_hours": 8.5,
+        "water_liters": 2.0,
+        "rpe": 9,
+        "calories": 2325,
+        "protein_g": 174,
+        "body_weight_lbs": 160.6,
         "creatine_g": 5
 
     },
     "exercises": [
-        {"name": "Squats", "sets": 4, "reps": 10, "load": 230},
+        {"name": "Squats", "sets": 4, "reps": 10, "load": 250},
         {"name": "Leg extension", "sets": 3, "reps": 10, "load": 155},
-        {"name": "Leg curl", "sets": 3, "reps": 8, "load": 135}, 
-        {"name": "Calf raise", "sets": 3, "reps": 12, "load": 170},
+        {"name": "Leg curl", "sets": 3, "reps": 10, "load": 135}, 
+        {"name": "Calf raise", "sets": 4, "reps": 15, "load": 150},
         {"name": "Adductor machine", "sets": 2, "reps": 10, "load": 105}
     ]
 }
